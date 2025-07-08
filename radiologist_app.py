@@ -18,8 +18,19 @@ class RadiologistApp:
         self.root.geometry("900x800")
         self.root.configure(bg='#f8fafc')
         self.radiologist_name = "Dr. Noor Ahmad"
-        if not os.path.exists("Reports"):
-            os.makedirs("Reports")
+        
+        # Get the application directory (works for both script and executable)
+        if getattr(sys, 'frozen', False):
+            # Running as executable
+            self.app_dir = os.path.dirname(sys.executable)
+        else:
+            # Running as script
+            self.app_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Create Reports directory in the same location as the executable/script
+        self.reports_dir = os.path.join(self.app_dir, "Reports")
+        if not os.path.exists(self.reports_dir):
+            os.makedirs(self.reports_dir)
         
         # Load admin data first
         self.load_admin_data()
@@ -341,7 +352,7 @@ class RadiologistApp:
         self.filtered_reports = []
         
         try:
-            report_files = [f for f in os.listdir("Reports") if f.endswith(".docx")]
+            report_files = [f for f in os.listdir(self.reports_dir) if f.endswith(".docx")]
             report_files.sort(reverse=True)  # Most recent first
             self.all_reports = report_files
             self.filtered_reports = report_files
@@ -391,7 +402,7 @@ class RadiologistApp:
             return
             
         filename = self.filtered_reports[sel[0]]
-        filepath = os.path.join("Reports", filename)
+        filepath = os.path.join(self.reports_dir, filename)
         
         try:
             # Get file info
@@ -454,7 +465,7 @@ class RadiologistApp:
             messagebox.showwarning("No selection", "Please select a report to open.")
             return
         filename = self.filtered_reports[sel[0]]
-        filepath = os.path.abspath(os.path.join("Reports", filename))
+        filepath = os.path.abspath(os.path.join(self.reports_dir, filename))
         try:
             if sys.platform.startswith('darwin'):
                 subprocess.call(('open', filepath))
@@ -476,7 +487,7 @@ class RadiologistApp:
         filename = self.filtered_reports[sel[0]]
         if messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete '{filename}'?"):
             try:
-                os.remove(os.path.join("Reports", filename))
+                os.remove(os.path.join(self.reports_dir, filename))
                 self.refresh_reports_list()  # Refresh the list
                 self.details_text.config(state='normal')
                 self.details_text.delete("1.0", tk.END)
@@ -493,7 +504,7 @@ class RadiologistApp:
             return
             
         filename = self.filtered_reports[sel[0]]
-        filepath = os.path.join("Reports", filename)
+        filepath = os.path.join(self.reports_dir, filename)
         
         try:
             # Open the Word document with the default application for printing
@@ -982,6 +993,7 @@ RECOMMENDATIONS
         if not self.validate_inputs():
             return
         try:
+            # Create document without external templates to avoid PyInstaller issues
             doc = Document()
             
             # Set up document margins
@@ -992,38 +1004,14 @@ RECOMMENDATIONS
                 section.left_margin = Inches(1)
                 section.right_margin = Inches(1)
             
-            # Add header
-            header = section.header
-            header_para = header.paragraphs[0]
-            header_para.text = "NOOR CLINIC - RADIOLOGY DEPARTMENT"
+            # Add simple header as first paragraph (avoiding template issues)
+            header_para = doc.add_paragraph("NOOR CLINIC - RADIOLOGY DEPARTMENT")
             header_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            header_para.style.font.name = 'Arial'
-            header_para.style.font.size = Pt(12)
-            header_para.style.font.bold = True
-            header_para.style.font.color.rgb = RGBColor(0, 51, 102)
-            
-            # Add footer
-            footer = section.footer
-            footer_para = footer.paragraphs[0]
-            footer_para.text = f"Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')} | Page "
-            footer_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            footer_para.style.font.name = 'Arial'
-            footer_para.style.font.size = Pt(9)
-            footer_para.style.font.color.rgb = RGBColor(128, 128, 128)
-            
-            # Add page number to footer
-            run = footer_para.add_run()
-            fldChar = OxmlElement('w:fldChar')
-            fldChar.set(qn('w:fldCharType'), 'begin')
-            run._r.append(fldChar)
-            
-            instrText = OxmlElement('w:instrText')
-            instrText.text = "PAGE"
-            run._r.append(instrText)
-            
-            fldChar = OxmlElement('w:fldChar')
-            fldChar.set(qn('w:fldCharType'), 'end')
-            run._r.append(fldChar)
+            header_run = header_para.runs[0]
+            header_run.font.name = 'Arial'
+            header_run.font.size = Pt(12)
+            header_run.font.bold = True
+            header_run.font.color.rgb = RGBColor(0, 51, 102)
             
             # Add clinic logo/name at top
             clinic_para = doc.add_paragraph()
@@ -1140,12 +1128,20 @@ RECOMMENDATIONS
             # Add decorative line at bottom
             doc.add_paragraph("_" * 80).alignment = WD_ALIGN_PARAGRAPH.CENTER
             
+            # Add simple footer (avoiding template issues)
+            footer_para = doc.add_paragraph(f"Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}")
+            footer_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            footer_run = footer_para.runs[0]
+            footer_run.font.name = 'Arial'
+            footer_run.font.size = Pt(9)
+            footer_run.font.color.rgb = RGBColor(128, 128, 128)
+            
             # Generate filename
             patient_name_clean = self.patient_name_entry.get().strip().replace(" ", "_")
             test_type_clean = self.test_type_var.get().replace(" ", "_")
             body_part_clean = self.body_part_var.get().replace(" ", "_")
             date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"Reports/{patient_name_clean}_{test_type_clean}_{body_part_clean}_{date_str}.docx"
+            filename = os.path.join(self.reports_dir, f"{patient_name_clean}_{test_type_clean}_{body_part_clean}_{date_str}.docx")
             
             doc.save(filename)
             messagebox.showinfo("Success", f"Report saved successfully!\nLocation: {filename}")

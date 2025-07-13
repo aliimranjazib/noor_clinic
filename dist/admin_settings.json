@@ -1,0 +1,55 @@
+{
+  "test_types": [
+    "X-Ray",
+    "CT Scan",
+    "MRI",
+    "Ultrasound",
+    "Mammography",
+    "Bone Density",
+    "Other"
+  ],
+  "requirements": {
+    "X-Ray": {
+      "technique": "Standard X-Ray examination",
+      "findings": "EXAMINATION: X-Ray\n\nFINDINGS:\n- Normal examination\n- No significant abnormality detected",
+      "impression": "Normal X-Ray examination with no significant abnormality identified.",
+      "recommendations": "Clinical correlation recommended. Follow-up as clinically indicated."
+    },
+    "CT Scan": {
+      "technique": "Standard CT Scan examination",
+      "findings": "EXAMINATION: CT Scan\n\nFINDINGS:\n- Normal examination\n- No significant abnormality detected",
+      "impression": "Normal CT Scan examination with no significant abnormality identified.",
+      "recommendations": "Clinical correlation recommended. Follow-up as clinically indicated."
+    },
+    "MRI": {
+      "technique": "Standard MRI examination",
+      "findings": "EXAMINATION: MRI\n\nFINDINGS:\n- Normal examination\n- No significant abnormality detected",
+      "impression": "Normal MRI examination with no significant abnormality identified.",
+      "recommendations": "Clinical correlation recommended. Follow-up as clinically indicated."
+    },
+    "Ultrasound": {
+      "technique": "Standard Ultrasound examination",
+      "findings": "EXAMINATION: Ultrasound\n\nFINDINGS:\n- Normal examination\n- No significant abnormality detected",
+      "impression": "Normal Ultrasound examination with no significant abnormality identified.",
+      "recommendations": "Clinical correlation recommended. Follow-up as clinically indicated."
+    },
+    "Mammography": {
+      "technique": "Standard Mammography examination",
+      "findings": "EXAMINATION: Mammography\n\nFINDINGS:\n- Normal examination\n- No significant abnormality detected",
+      "impression": "Normal Mammography examination with no significant abnormality identified.",
+      "recommendations": "Clinical correlation recommended. Follow-up as clinically indicated."
+    },
+    "Bone Density": {
+      "technique": "Standard Bone Density examination",
+      "findings": "EXAMINATION: Bone Density\n\nFINDINGS:\n- Normal examination\n- No significant abnormality detected",
+      "impression": "Normal Bone Density examination with no significant abnormality identified.",
+      "recommendations": "Clinical correlation recommended. Follow-up as clinically indicated."
+    },
+    "Other": {
+      "technique": "Standard Other examination",
+      "findings": "EXAMINATION: Other\n\nFINDINGS:\n- Normal examination\n- No significant abnormality detected",
+      "impression": "Normal Other examination with no significant abnormality identified.",
+      "recommendations": "Clinical correlation recommended. Follow-up as clinically indicated."
+    }
+  }
+}

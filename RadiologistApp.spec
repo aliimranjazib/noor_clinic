@@ -37,9 +37,3 @@ exe = EXE(
     entitlements_file=None,
     icon=['icon.ico'],
 )
-app = BUNDLE(
-    exe,
-    name='RadiologistApp.app',
-    icon='icon.ico',
-    bundle_identifier=None,
-)

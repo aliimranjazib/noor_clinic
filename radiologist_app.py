@@ -43,16 +43,17 @@ class RadiologistApp:
         style.theme_use('clam')
         style.configure('TFrame', background='#f8fafc')
         style.configure('TLabel', background='#f8fafc', font=("Segoe UI", 11))
-        style.configure('Header.TLabel', font=("Segoe UI", 24, "bold"), foreground="#1e293b", background='#f8fafc')
+        style.configure('Header.TLabel', font=("Segoe UI", 16, "bold"), foreground="#1e293b", background='#f8fafc')
         style.configure('Subheader.TLabel', font=("Segoe UI", 14, "bold"), foreground="#475569", background='#f8fafc')
         style.configure('Section.TLabelframe', background='#f8fafc', foreground="#1e293b", font=("Segoe UI", 12, "bold"))
         style.configure('Section.TLabelframe.Label', font=("Segoe UI", 12, "bold"), foreground="#1e293b", background='#f8fafc')
-        style.configure('Accent.TButton', font=("Segoe UI", 11, "bold"), background="#3b82f6", foreground="white", borderwidth=0)
+        style.configure('Accent.TButton', font=("Segoe UI", 11, "bold"), background="#3b82f6", foreground="white", borderwidth=0, padding=(12, 10), relief="flat")
         style.map('Accent.TButton', background=[('active', '#2563eb')])
-        style.configure('Success.TButton', font=("Segoe UI", 11, "bold"), background="#10b981", foreground="white", borderwidth=0)
+        style.configure('Success.TButton', font=("Segoe UI", 11, "bold"), background="#10b981", foreground="white", borderwidth=0, padding=(12, 10), relief="flat")
         style.map('Success.TButton', background=[('active', '#059669')])
-        style.configure('Danger.TButton', font=("Segoe UI", 11), background="#ef4444", foreground="white", borderwidth=0)
+        style.configure('Danger.TButton', font=("Segoe UI", 11), background="#ef4444", foreground="white", borderwidth=0, padding=(12, 10), relief="flat")
         style.map('Danger.TButton', background=[('active', '#dc2626')])
+        style.configure('TButton', font=("Segoe UI", 11), padding=(10, 8), relief="flat")
         style.configure('TEntry', font=("Segoe UI", 11))
         style.configure('TCombobox', font=("Segoe UI", 11))
         style.configure('TNotebook', background='#f8fafc')
@@ -61,24 +62,24 @@ class RadiologistApp:
     def create_widgets(self):
         # Header with logo and title
         header_frame = ttk.Frame(self.root)
-        header_frame.pack(fill="x", padx=20, pady=(20, 0))
+        header_frame.pack(fill="x", padx=20, pady=(10, 0))
         
         # Logo
         logo_frame = ttk.Frame(header_frame)
         logo_frame.pack(side="left")
-        logo = tk.Canvas(logo_frame, width=50, height=50, bg='#f8fafc', highlightthickness=0)
-        logo.create_oval(5, 5, 45, 45, fill="#3b82f6", outline="")
-        logo.create_text(25, 25, text="Rx", fill="white", font=("Segoe UI", 18, "bold"))
-        logo.pack(side="left", padx=(0, 15))
+        logo = tk.Canvas(logo_frame, width=32, height=32, bg='#f8fafc', highlightthickness=0)
+        logo.create_oval(2, 2, 30, 30, fill="#3b82f6", outline="")
+        logo.create_text(16, 16, text="Rx", fill="white", font=("Segoe UI", 12, "bold"))
+        logo.pack(side="left", padx=(0, 8))
         
         # Title and info
         title_frame = ttk.Frame(header_frame)
         title_frame.pack(side="left", fill="x", expand=True)
         ttk.Label(title_frame, text="Radiologist Report Generator", style='Header.TLabel').pack(anchor='w')
         info_frame = ttk.Frame(title_frame)
-        info_frame.pack(anchor='w', pady=(5, 0))
-        ttk.Label(info_frame, text=f"Radiologist: {self.radiologist_name}", font=("Segoe UI", 12, "bold"), foreground="#475569").pack(side="left", padx=(0, 20))
-        ttk.Label(info_frame, text=f"Date: {datetime.now().strftime('%B %d, %Y')}", font=("Segoe UI", 11), foreground="#64748b").pack(side="left")
+        info_frame.pack(anchor='w', pady=(1, 0))
+        ttk.Label(info_frame, text=f"Radiologist: {self.radiologist_name}", font=("Segoe UI", 9, "bold"), foreground="#475569").pack(side="left", padx=(0, 12))
+        ttk.Label(info_frame, text=f"Date: {datetime.now().strftime('%B %d, %Y')}", font=("Segoe UI", 8), foreground="#64748b").pack(side="left")
 
         # Main content area with tabs
         notebook = ttk.Notebook(self.root)
@@ -162,19 +163,19 @@ class RadiologistApp:
 
     def create_report_tab(self, parent):
         # Report Template Section
-        template_frame = ttk.Labelframe(parent, text="Report Template", style='Section.TLabelframe', padding=(20, 15))
-        template_frame.pack(fill="x", padx=20, pady=(20, 10))
+        template_frame = ttk.Labelframe(parent, text="Report Template", style='Section.TLabelframe', padding=(15, 10))
+        template_frame.pack(fill="x", padx=20, pady=(15, 8))
 
         # Template selection
         template_btn_frame = ttk.Frame(template_frame)
-        template_btn_frame.pack(fill="x", pady=(0, 15))
+        template_btn_frame.pack(fill="x", pady=(0, 10))
         ttk.Label(template_btn_frame, text="Load Template:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").pack(side="left", padx=(0, 10))
         self.template_button = ttk.Button(template_btn_frame, text="📋 Load Template", style='Accent.TButton', command=self.load_template)
         self.template_button.pack(side="left", ipadx=10, ipady=5)
 
         # Report content
-        content_frame = ttk.Labelframe(parent, text="Report Content", style='Section.TLabelframe', padding=(20, 15))
-        content_frame.pack(fill="both", expand=True, padx=20, pady=(10, 20))
+        content_frame = ttk.Labelframe(parent, text="Report Content", style='Section.TLabelframe', padding=(15, 12))
+        content_frame.pack(fill="both", expand=True, padx=20, pady=(8, 15))
 
         # Technique
         ttk.Label(content_frame, text="Technique:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").pack(anchor='w', pady=(0, 5))
@@ -183,27 +184,27 @@ class RadiologistApp:
 
         # Findings
         ttk.Label(content_frame, text="Findings:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").pack(anchor='w', pady=(0, 5))
-        self.findings_text = tk.Text(content_frame, height=8, font=("Segoe UI", 11), relief='solid', bd=1, wrap='word', 
+        self.findings_text = tk.Text(content_frame, height=6, font=("Segoe UI", 11), relief='solid', bd=1, wrap='word', 
                                    highlightbackground="#cbd5e1", highlightcolor="#3b82f6", bg='#ffffff')
-        self.findings_text.pack(fill="both", expand=True, pady=(0, 15))
+        self.findings_text.pack(fill="both", expand=True, pady=(0, 12))
         findings_scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=self.findings_text.yview)
         findings_scrollbar.pack(side="right", fill="y")
         self.findings_text.configure(yscrollcommand=findings_scrollbar.set)
 
         # Impression
         ttk.Label(content_frame, text="Impression:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").pack(anchor='w', pady=(0, 5))
-        self.impression_text = tk.Text(content_frame, height=4, font=("Segoe UI", 11), relief='solid', bd=1, wrap='word',
+        self.impression_text = tk.Text(content_frame, height=3, font=("Segoe UI", 11), relief='solid', bd=1, wrap='word',
                                      highlightbackground="#cbd5e1", highlightcolor="#3b82f6", bg='#ffffff')
-        self.impression_text.pack(fill="both", expand=True, pady=(0, 15))
+        self.impression_text.pack(fill="both", expand=True, pady=(0, 12))
         impression_scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=self.impression_text.yview)
         impression_scrollbar.pack(side="right", fill="y")
         self.impression_text.configure(yscrollcommand=impression_scrollbar.set)
 
         # Recommendations
         ttk.Label(content_frame, text="Recommendations:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").pack(anchor='w', pady=(0, 5))
-        self.recommendations_text = tk.Text(content_frame, height=3, font=("Segoe UI", 11), relief='solid', bd=1, wrap='word',
+        self.recommendations_text = tk.Text(content_frame, height=2, font=("Segoe UI", 11), relief='solid', bd=1, wrap='word',
                                           highlightbackground="#cbd5e1", highlightcolor="#3b82f6", bg='#ffffff')
-        self.recommendations_text.pack(fill="both", expand=True, pady=(0, 15))
+        self.recommendations_text.pack(fill="both", expand=True, pady=(0, 10))
         recommendations_scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=self.recommendations_text.yview)
         recommendations_scrollbar.pack(side="right", fill="y")
         self.recommendations_text.configure(yscrollcommand=recommendations_scrollbar.set)
@@ -213,41 +214,64 @@ class RadiologistApp:
         preview_frame = ttk.Labelframe(parent, text="Report Preview", style='Section.TLabelframe', padding=(20, 15))
         preview_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-        # Preview text area with proper sizing
+        # Preview text area with reduced height
         preview_text_frame = ttk.Frame(preview_frame)
-        preview_text_frame.pack(fill="both", expand=True, pady=(0, 15))
+        preview_text_frame.pack(fill="both", expand=True, pady=(0, 10))
         
         self.preview_text = tk.Text(preview_text_frame, font=("Segoe UI", 11), relief='solid', bd=1, wrap='word',
-                                  highlightbackground="#cbd5e1", highlightcolor="#3b82f6", bg='#ffffff', state='disabled')
+                                  highlightbackground="#cbd5e1", highlightcolor="#3b82f6", bg='#ffffff', state='disabled', height=15)
         self.preview_text.pack(fill="both", expand=True, side="left")
         
         preview_scrollbar = ttk.Scrollbar(preview_text_frame, orient="vertical", command=self.preview_text.yview)
         preview_scrollbar.pack(side="right", fill="y")
         self.preview_text.configure(yscrollcommand=preview_scrollbar.set)
 
-        # Buttons frame
-        preview_buttons_frame = ttk.Frame(preview_frame)
-        preview_buttons_frame.pack(fill="x", pady=(0, 10))
+        # Simple responsive button layout
+        button_container = ttk.Frame(preview_frame)
+        button_container.pack(fill="x", pady=10, padx=20)
         
-        # Left side buttons
-        left_buttons_frame = ttk.Frame(preview_buttons_frame)
-        left_buttons_frame.pack(side="left")
+        # Create compact but visible buttons
+        update_btn = tk.Button(button_container, 
+                             text="🔄 Update Preview", 
+                             font=("Segoe UI", 12, "bold"),
+                             bg="#3b82f6", 
+                             fg="white",
+                             relief="solid",
+                             bd=2,
+                             padx=15,
+                             pady=8,
+                             cursor="hand2",
+                             height=1,
+                             command=self.update_preview)
+        update_btn.pack(side="left", fill="both", expand=True, padx=(0, 10), pady=5)
         
-        # Update preview button
-        update_preview_btn = ttk.Button(left_buttons_frame, text="🔄 Update Preview", style='Accent.TButton', command=self.update_preview)
-        update_preview_btn.pack(side="left", ipadx=10, ipady=5)
+        print_btn = tk.Button(button_container, 
+                            text="🖨️ Print Report", 
+                            font=("Segoe UI", 12, "bold"),
+                            bg="#3b82f6", 
+                            fg="white",
+                            relief="solid",
+                            bd=2,
+                            padx=15,
+                            pady=8,
+                            cursor="hand2",
+                            height=1,
+                            command=self.print_report)
+        print_btn.pack(side="left", fill="both", expand=True, padx=5, pady=5)
         
-        # Print button
-        print_btn = ttk.Button(left_buttons_frame, text="🖨️ Print Report", style='Accent.TButton', command=self.print_report)
-        print_btn.pack(side="left", padx=(10, 0), ipadx=10, ipady=5)
-        
-        # Right side buttons
-        right_buttons_frame = ttk.Frame(preview_buttons_frame)
-        right_buttons_frame.pack(side="right")
-        
-        # Save from preview button
-        save_from_preview_btn = ttk.Button(right_buttons_frame, text="💾 Save Report", style='Success.TButton', command=self.save_report)
-        save_from_preview_btn.pack(side="right", ipadx=10, ipady=5)
+        save_btn = tk.Button(button_container, 
+                           text="💾 Save Report", 
+                           font=("Segoe UI", 12, "bold"),
+                           bg="#10b981", 
+                           fg="white",
+                           relief="solid",
+                           bd=2,
+                           padx=15,
+                           pady=8,
+                           cursor="hand2",
+                           height=1,
+                           command=self.save_report)
+        save_btn.pack(side="left", fill="both", expand=True, padx=(10, 0), pady=5)
         
         # Instructions
         instructions_label = ttk.Label(preview_frame, text="💡 Tip: Click 'Update Preview' to see your report before saving", 
@@ -306,35 +330,47 @@ class RadiologistApp:
         self.reports_list.configure(yscrollcommand=list_scrollbar.set)
         
         # Right side - Report details
-        details_frame = ttk.Labelframe(content_frame, text="Report Details", style='Section.TLabelframe', padding=(15, 10))
+        details_frame = ttk.Labelframe(content_frame, text="Report Details", style='Section.TLabelframe', padding=(8, 6))
         details_frame.pack(side="right", fill="both", expand=True, padx=(10, 0))
         
-        # Report details text
-        self.details_text = tk.Text(details_frame, font=("Segoe UI", 10), relief='solid', bd=1, wrap='word',
-                                   highlightbackground="#cbd5e1", highlightcolor="#3b82f6", bg='#ffffff', state='disabled')
-        self.details_text.pack(fill="both", expand=True, pady=(0, 10))
+        # Report details text with minimal height
+        self.details_text = tk.Text(details_frame, font=("Segoe UI", 8), relief='solid', bd=1, wrap='word',
+                                   highlightbackground="#cbd5e1", highlightcolor="#3b82f6", bg='#ffffff', state='disabled', height=4)
+        self.details_text.pack(fill="both", expand=True, pady=(0, 2))
         
         details_scrollbar = ttk.Scrollbar(details_frame, orient="vertical", command=self.details_text.yview)
         details_scrollbar.pack(side="right", fill="y")
         self.details_text.configure(yscrollcommand=details_scrollbar.set)
         
-        # Action buttons
+        # Action buttons with better layout
         action_frame = ttk.Frame(details_frame)
-        action_frame.pack(fill="x", pady=(0, 10))
+        action_frame.pack(fill="x", pady=(0, 3))
         
-        self.open_btn = ttk.Button(action_frame, text="📄 Open Report", style='Accent.TButton', command=self.open_selected_report)
-        self.open_btn.pack(side="left", ipadx=10, ipady=5)
+        self.open_btn = tk.Button(action_frame, text="📄 Open Report", 
+                                font=("Segoe UI", 10, "bold"),
+                                bg="#3b82f6", fg="white", relief="solid", bd=2,
+                                padx=8, pady=4, cursor="hand2", height=1,
+                                command=self.open_selected_report)
+        self.open_btn.pack(side="left", fill="both", expand=True, padx=(0, 2), pady=2)
         
-        self.print_btn = ttk.Button(action_frame, text="🖨️ Print Report", style='Accent.TButton', command=self.print_selected_report)
-        self.print_btn.pack(side="left", padx=(10, 0), ipadx=10, ipady=5)
+        self.print_btn = tk.Button(action_frame, text="🖨️ Print Report", 
+                                 font=("Segoe UI", 10, "bold"),
+                                 bg="#3b82f6", fg="white", relief="solid", bd=2,
+                                 padx=8, pady=4, cursor="hand2", height=1,
+                                 command=self.print_selected_report)
+        self.print_btn.pack(side="left", fill="both", expand=True, padx=2, pady=2)
         
-        self.delete_btn = ttk.Button(action_frame, text="🗑️ Delete Report", style='Danger.TButton', command=self.delete_selected_report)
-        self.delete_btn.pack(side="left", padx=(10, 0), ipadx=10, ipady=5)
+        self.delete_btn = tk.Button(action_frame, text="🗑️ Delete Report", 
+                                  font=("Segoe UI", 10, "bold"),
+                                  bg="#ef4444", fg="white", relief="solid", bd=2,
+                                  padx=8, pady=4, cursor="hand2", height=1,
+                                  command=self.delete_selected_report)
+        self.delete_btn.pack(side="left", fill="both", expand=True, padx=(2, 0), pady=2)
         
         # Status label
-        self.reports_status_label = ttk.Label(details_frame, text="No reports found", font=("Segoe UI", 10), 
+        self.reports_status_label = ttk.Label(details_frame, text="No reports found", font=("Segoe UI", 8), 
                                             foreground="#64748b", background='#f8fafc')
-        self.reports_status_label.pack(pady=(10, 0))
+        self.reports_status_label.pack(pady=(3, 0))
         
         # Bind selection event
         self.reports_list.bind('<<ListboxSelect>>', self.on_report_select)
@@ -415,14 +451,12 @@ class RadiologistApp:
             name_parts = filename.replace('.docx', '').split('_')
             
             details = f"""📄 Report Details
-{'='*40}
+{'='*30}
 
 📁 Filename: {filename}
-📏 Size: {file_size:,} bytes ({file_size/1024:.1f} KB)
-📅 Created: {created_time.strftime('%B %d, %Y at %I:%M %p')}
-🔄 Modified: {modified_time.strftime('%B %d, %Y at %I:%M %p')}
-
-👤 Patient Information:
+📏 Size: {file_size/1024:.1f} KB
+📅 Created: {created_time.strftime('%B %d, %Y')}
+👤 Patient Info:
 """
             
             # Try to extract patient info from filename
@@ -430,21 +464,15 @@ class RadiologistApp:
                 patient_name = name_parts[0].replace('_', ' ')
                 test_type = name_parts[1].replace('_', ' ')
                 body_part = name_parts[2].replace('_', ' ')
-                date_time = name_parts[3] if len(name_parts) > 3 else "Unknown"
                 
                 details += f"   • Patient: {patient_name}\n"
-                details += f"   • Test Type: {test_type}\n"
-                details += f"   • Body Part: {body_part}\n"
-                details += f"   • Date/Time: {date_time}\n"
+                details += f"   • Test: {test_type}\n"
+                details += f"   • Part: {body_part}\n"
             else:
-                details += "   • Information not available\n"
+                details += "   • Info not available\n"
             
             details += f"""
-📂 File Path: {os.path.abspath(filepath)}
-
-💡 Actions:
-   • Use buttons below to open or delete
-   • Double-click to open in Word
+💡 Use buttons below to open/delete
 """
             
             self.details_text.config(state='normal')

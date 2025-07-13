@@ -1,3 +1,0 @@
-([('RadiologistApp',
-   '/Users/jazib/Documents/GitHub/noor_clinic/dist/RadiologistApp',
-   'EXECUTABLE')],)

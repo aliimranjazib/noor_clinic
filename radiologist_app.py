@@ -5,6 +5,8 @@ import os
 import sys
 import subprocess
 import json
+import random
+import string
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt, RGBColor
@@ -34,6 +36,9 @@ class RadiologistApp:
         
         # Load admin data first
         self.load_admin_data()
+        
+        # Initialize patient ID counter
+        self.patient_id_counter = self.load_patient_id_counter()
         
         self.setup_styles()
         self.create_widgets()
@@ -127,6 +132,47 @@ class RadiologistApp:
         self.status_label = ttk.Label(self.root, text="Ready to create reports", font=("Segoe UI", 10), foreground="#64748b", background='#f8fafc')
         self.status_label.pack(side="bottom", fill="x", padx=20, pady=(0, 10))
 
+        # Auto-generate first Patient ID
+        self.generate_new_patient_id()
+
+    def load_patient_id_counter(self):
+        """Load the current patient ID counter from file"""
+        counter_file = "patient_id_counter.json"
+        try:
+            if os.path.exists(counter_file):
+                with open(counter_file, 'r') as f:
+                    data = json.load(f)
+                    return data.get('counter', 1)
+            return 1
+        except:
+            return 1
+
+    def save_patient_id_counter(self):
+        """Save the current patient ID counter to file"""
+        counter_file = "patient_id_counter.json"
+        try:
+            with open(counter_file, 'w') as f:
+                json.dump({'counter': self.patient_id_counter}, f)
+        except Exception as e:
+            print(f"Error saving patient ID counter: {e}")
+
+    def generate_patient_id(self):
+        """Generate a unique patient ID"""
+        # Format: P + 6-digit number (e.g., P000001, P000002, etc.)
+        patient_id = f"P{self.patient_id_counter:06d}"
+        self.patient_id_counter += 1
+        self.save_patient_id_counter()
+        return patient_id
+
+    def generate_new_patient_id(self):
+        """Generate and display a new patient ID"""
+        new_id = self.generate_patient_id()
+        self.patient_id_entry.config(state='normal')
+        self.patient_id_entry.delete(0, tk.END)
+        self.patient_id_entry.insert(0, new_id)
+        self.patient_id_entry.config(state='readonly')
+        self.status_label.config(text=f"Generated Patient ID: {new_id}", foreground="#10b981")
+
     def create_patient_tab(self, parent):
         # Patient Information Section
         patient_frame = ttk.Labelframe(parent, text="Patient Information", style='Section.TLabelframe', padding=(20, 15))
@@ -134,27 +180,38 @@ class RadiologistApp:
 
         # Grid layout for better organization
         # Row 1
-        ttk.Label(patient_frame, text="Patient Name:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").grid(row=0, column=0, sticky='w', pady=(0, 10), padx=(0, 20))
-        self.patient_name_entry = ttk.Entry(patient_frame, width=30, font=("Segoe UI", 11))
-        self.patient_name_entry.grid(row=0, column=1, sticky='ew', pady=(0, 10), padx=(0, 20))
+        ttk.Label(patient_frame, text="Patient ID:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").grid(row=0, column=0, sticky='w', pady=(0, 10), padx=(0, 20))
+        
+        self.patient_id_entry = ttk.Entry(patient_frame, width=15, font=("Segoe UI", 11), state='readonly')
+        self.patient_id_entry.grid(row=0, column=1, sticky='w', pady=(0, 10), padx=(0, 20))
+        
+        # Generate Patient ID button
+        self.generate_id_btn = ttk.Button(patient_frame, text="🔄 Generate ID", style='Accent.TButton', 
+                                         command=self.generate_new_patient_id)
+        self.generate_id_btn.grid(row=0, column=2, sticky='w', pady=(0, 10), padx=(10, 0))
 
-        ttk.Label(patient_frame, text="Age:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").grid(row=0, column=2, sticky='w', pady=(0, 10), padx=(0, 20))
-        self.age_entry = ttk.Entry(patient_frame, width=10, font=("Segoe UI", 11))
-        self.age_entry.grid(row=0, column=3, sticky='w', pady=(0, 10))
+        ttk.Label(patient_frame, text="Patient Name:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").grid(row=0, column=3, sticky='w', pady=(0, 10), padx=(0, 20))
+        self.patient_name_entry = ttk.Entry(patient_frame, width=25, font=("Segoe UI", 11))
+        self.patient_name_entry.grid(row=0, column=4, sticky='ew', pady=(0, 10))
 
         # Row 2
-        ttk.Label(patient_frame, text="Test Type:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").grid(row=1, column=0, sticky='w', pady=(0, 10), padx=(0, 20))
+        ttk.Label(patient_frame, text="Age:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").grid(row=1, column=0, sticky='w', pady=(0, 10), padx=(0, 20))
+        self.age_entry = ttk.Entry(patient_frame, width=10, font=("Segoe UI", 11))
+        self.age_entry.grid(row=1, column=1, sticky='w', pady=(0, 10), padx=(0, 20))
+
+        # Row 3
+        ttk.Label(patient_frame, text="Test Type:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").grid(row=2, column=0, sticky='w', pady=(0, 10), padx=(0, 20))
         self.test_type_var = tk.StringVar()
         self.test_type_combo = ttk.Combobox(patient_frame, textvariable=self.test_type_var, values=self.admin_data["test_types"], state="readonly", width=27, font=("Segoe UI", 11))
-        self.test_type_combo.grid(row=1, column=1, sticky='ew', pady=(0, 10), padx=(0, 20))
+        self.test_type_combo.grid(row=2, column=1, sticky='ew', pady=(0, 10), padx=(0, 20))
         self.test_type_combo.set("Select Test Type")
         self.test_type_combo.bind('<<ComboboxSelected>>', self.on_test_type_change)
 
-        ttk.Label(patient_frame, text="Body Part:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").grid(row=1, column=2, sticky='w', pady=(0, 10), padx=(0, 20))
+        ttk.Label(patient_frame, text="Body Part:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").grid(row=2, column=2, sticky='w', pady=(0, 10), padx=(0, 20))
         self.body_part_var = tk.StringVar()
         body_parts = ["Chest", "Abdomen", "Head", "Spine", "Extremities", "Pelvis", "Other"]
         self.body_part_combo = ttk.Combobox(patient_frame, textvariable=self.body_part_var, values=body_parts, state="readonly", width=15, font=("Segoe UI", 11))
-        self.body_part_combo.grid(row=1, column=3, sticky='w', pady=(0, 10))
+        self.body_part_combo.grid(row=2, column=3, sticky='w', pady=(0, 10))
         self.body_part_combo.set("Select Body Part")
         self.body_part_combo.bind('<<ComboboxSelected>>', self.on_body_part_change)
 
@@ -460,7 +517,18 @@ class RadiologistApp:
 """
             
             # Try to extract patient info from filename
-            if len(name_parts) >= 4:
+            if len(name_parts) >= 5:
+                patient_id = name_parts[0].replace('_', ' ')
+                patient_name = name_parts[1].replace('_', ' ')
+                test_type = name_parts[2].replace('_', ' ')
+                body_part = name_parts[3].replace('_', ' ')
+                
+                details += f"   • Patient ID: {patient_id}\n"
+                details += f"   • Patient: {patient_name}\n"
+                details += f"   • Test: {test_type}\n"
+                details += f"   • Part: {body_part}\n"
+            elif len(name_parts) >= 4:
+                # Handle old format files (without Patient ID)
                 patient_name = name_parts[0].replace('_', ' ')
                 test_type = name_parts[1].replace('_', ' ')
                 body_part = name_parts[2].replace('_', ' ')
@@ -650,6 +718,7 @@ Time: {datetime.now().strftime('%I:%M %p')}
 
 PATIENT INFORMATION
 {'-'*20}
+Patient ID: {self.patient_id_entry.get().strip()}
 Name: {self.patient_name_entry.get().strip()}
 Age: {self.age_entry.get().strip()}
 Test Type: {self.test_type_var.get()}
@@ -894,7 +963,20 @@ RECOMMENDATIONS
 """
                 
                 # Try to extract patient info from filename
-                if len(name_parts) >= 4:
+                if len(name_parts) >= 5:
+                    patient_id = name_parts[0].replace('_', ' ')
+                    patient_name = name_parts[1].replace('_', ' ')
+                    test_type = name_parts[2].replace('_', ' ')
+                    body_part = name_parts[3].replace('_', ' ')
+                    date_time = name_parts[4] if len(name_parts) > 4 else "Unknown"
+                    
+                    details += f"   • Patient ID: {patient_id}\n"
+                    details += f"   • Patient: {patient_name}\n"
+                    details += f"   • Test Type: {test_type}\n"
+                    details += f"   • Body Part: {body_part}\n"
+                    details += f"   • Date/Time: {date_time}\n"
+                elif len(name_parts) >= 4:
+                    # Handle old format files (without Patient ID)
                     patient_name = name_parts[0].replace('_', ' ')
                     test_type = name_parts[1].replace('_', ' ')
                     body_part = name_parts[2].replace('_', ' ')
@@ -989,6 +1071,9 @@ RECOMMENDATIONS
         load_reports()
 
     def validate_inputs(self):
+        if not self.patient_id_entry.get().strip():
+            messagebox.showerror("Error", "Please generate a patient ID first")
+            return False
         if not self.patient_name_entry.get().strip():
             messagebox.showerror("Error", "Please enter patient name")
             return False
@@ -1073,7 +1158,7 @@ RECOMMENDATIONS
             
             # Right column - Patient details
             right_cell = info_table.cell(0, 1)
-            right_cell.text = f"Patient Name: {self.patient_name_entry.get().strip()}\nAge: {self.age_entry.get().strip()}\nTest Type: {self.test_type_var.get()}\nBody Part: {self.body_part_var.get()}"
+            right_cell.text = f"Patient ID: {self.patient_id_entry.get().strip()}\nPatient Name: {self.patient_name_entry.get().strip()}\nAge: {self.age_entry.get().strip()}\nTest Type: {self.test_type_var.get()}\nBody Part: {self.body_part_var.get()}"
             
             # Style the table
             for row in info_table.rows:
@@ -1165,11 +1250,12 @@ RECOMMENDATIONS
             footer_run.font.color.rgb = RGBColor(128, 128, 128)
             
             # Generate filename
+            patient_id_clean = self.patient_id_entry.get().strip().replace(" ", "_")
             patient_name_clean = self.patient_name_entry.get().strip().replace(" ", "_")
             test_type_clean = self.test_type_var.get().replace(" ", "_")
             body_part_clean = self.body_part_var.get().replace(" ", "_")
             date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = os.path.join(self.reports_dir, f"{patient_name_clean}_{test_type_clean}_{body_part_clean}_{date_str}.docx")
+            filename = os.path.join(self.reports_dir, f"{patient_id_clean}_{patient_name_clean}_{test_type_clean}_{body_part_clean}_{date_str}.docx")
             
             doc.save(filename)
             messagebox.showinfo("Success", f"Report saved successfully!\nLocation: {filename}")
@@ -1180,6 +1266,9 @@ RECOMMENDATIONS
             self.status_label.config(text="Error saving report", foreground="#ef4444")
 
     def clear_form(self):
+        self.patient_id_entry.config(state='normal')
+        self.patient_id_entry.delete(0, tk.END)
+        self.patient_id_entry.config(state='readonly')
         self.patient_name_entry.delete(0, tk.END)
         self.age_entry.delete(0, tk.END)
         self.test_type_combo.set("Select Test Type")

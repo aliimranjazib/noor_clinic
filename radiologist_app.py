@@ -115,19 +115,6 @@ class RadiologistApp:
         notebook.add(admin_tab, text="Admin Settings")
         self.create_admin_tab(admin_tab)
 
-        # Bottom buttons
-        button_frame = ttk.Frame(self.root)
-        button_frame.pack(fill="x", padx=20, pady=(0, 20))
-        
-        self.save_button = ttk.Button(button_frame, text="💾 Save Report", style='Success.TButton', command=self.save_report)
-        self.save_button.pack(side="right", padx=(10, 0), ipadx=15, ipady=8)
-        
-        self.clear_button = ttk.Button(button_frame, text="🗑️ Clear All", style='Danger.TButton', command=self.clear_form)
-        self.clear_button.pack(side="right", padx=(10, 0), ipadx=15, ipady=8)
-        
-        self.view_button = ttk.Button(button_frame, text="📁 View Reports", style='Accent.TButton', command=self.open_view_reports)
-        self.view_button.pack(side="right", padx=(10, 0), ipadx=15, ipady=8)
-
         # Status bar
         self.status_label = ttk.Label(self.root, text="Ready to create reports", font=("Segoe UI", 10), foreground="#64748b", background='#f8fafc')
         self.status_label.pack(side="bottom", fill="x", padx=20, pady=(0, 10))
@@ -217,6 +204,11 @@ class RadiologistApp:
 
         # Configure grid weights
         patient_frame.columnconfigure(1, weight=1)
+        
+        # Add Clear All button for patient information
+        clear_patient_btn = ttk.Button(patient_frame, text="🗑️ Clear Patient Info", style='Danger.TButton', 
+                                      command=self.clear_patient_info)
+        clear_patient_btn.grid(row=3, column=0, columnspan=5, pady=(10, 0), sticky='ew')
 
     def create_report_tab(self, parent):
         # Report Template Section
@@ -234,13 +226,63 @@ class RadiologistApp:
         content_frame = ttk.Labelframe(parent, text="Report Content", style='Section.TLabelframe', padding=(15, 12))
         content_frame.pack(fill="both", expand=True, padx=20, pady=(8, 15))
 
-        # Technique
+        # Technique with rich text editing
         ttk.Label(content_frame, text="Technique:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").pack(anchor='w', pady=(0, 5))
-        self.technique_entry = ttk.Entry(content_frame, font=("Segoe UI", 11))
-        self.technique_entry.pack(fill="x", pady=(0, 15))
+        
+        # Technique formatting toolbar
+        technique_toolbar = ttk.Frame(content_frame)
+        technique_toolbar.pack(fill="x", pady=(0, 5))
+        
+        tk.Button(technique_toolbar, text="B", font=("Segoe UI", 10, "bold"), width=3, 
+                 command=lambda: self.toggle_bold(self.technique_text)).pack(side="left", padx=(0, 2))
+        tk.Button(technique_toolbar, text="I", font=("Segoe UI", 10, "italic"), width=3,
+                 command=lambda: self.toggle_italic(self.technique_text)).pack(side="left", padx=(0, 2))
+        tk.Button(technique_toolbar, text="•", font=("Segoe UI", 10), width=3,
+                 command=lambda: self.add_bullet(self.technique_text)).pack(side="left", padx=(0, 2))
+        tk.Button(technique_toolbar, text="📋", font=("Segoe UI", 10), width=3,
+                 command=lambda: self.paste_table(self.technique_text)).pack(side="left", padx=(0, 2))
+        
+        # Font size dropdown for technique
+        tk.Label(technique_toolbar, text="Size:", font=("Segoe UI", 9)).pack(side="left", padx=(10, 2))
+        technique_size_var = tk.StringVar(value="11")
+        technique_size_combo = ttk.Combobox(technique_toolbar, textvariable=technique_size_var, 
+                                           values=["10", "11", "12", "14", "16"], width=5, state="readonly")
+        technique_size_combo.pack(side="left", padx=(0, 10))
+        technique_size_combo.bind('<<ComboboxSelected>>', 
+                                 lambda e: self.change_font_size(self.technique_text, technique_size_var.get()))
+        
+        self.technique_text = tk.Text(content_frame, height=3, font=("Segoe UI", 11), relief='solid', bd=1, wrap='word', 
+                                     highlightbackground="#cbd5e1", highlightcolor="#3b82f6", bg='#ffffff')
+        self.technique_text.pack(fill="x", pady=(0, 15))
+        technique_scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=self.technique_text.yview)
+        technique_scrollbar.pack(side="right", fill="y")
+        self.technique_text.configure(yscrollcommand=technique_scrollbar.set)
 
-        # Findings
+        # Findings with rich text editing
         ttk.Label(content_frame, text="Findings:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").pack(anchor='w', pady=(0, 5))
+        
+        # Findings formatting toolbar
+        findings_toolbar = ttk.Frame(content_frame)
+        findings_toolbar.pack(fill="x", pady=(0, 5))
+        
+        tk.Button(findings_toolbar, text="B", font=("Segoe UI", 10, "bold"), width=3, 
+                 command=lambda: self.toggle_bold(self.findings_text)).pack(side="left", padx=(0, 2))
+        tk.Button(findings_toolbar, text="I", font=("Segoe UI", 10, "italic"), width=3,
+                 command=lambda: self.toggle_italic(self.findings_text)).pack(side="left", padx=(0, 2))
+        tk.Button(findings_toolbar, text="•", font=("Segoe UI", 10), width=3,
+                 command=lambda: self.add_bullet(self.findings_text)).pack(side="left", padx=(0, 2))
+        tk.Button(findings_toolbar, text="📋", font=("Segoe UI", 10), width=3,
+                 command=lambda: self.paste_table(self.findings_text)).pack(side="left", padx=(0, 2))
+        
+        # Font size dropdown for findings
+        tk.Label(findings_toolbar, text="Size:", font=("Segoe UI", 9)).pack(side="left", padx=(10, 2))
+        findings_size_var = tk.StringVar(value="11")
+        findings_size_combo = ttk.Combobox(findings_toolbar, textvariable=findings_size_var, 
+                                          values=["10", "11", "12", "14", "16"], width=5, state="readonly")
+        findings_size_combo.pack(side="left", padx=(0, 10))
+        findings_size_combo.bind('<<ComboboxSelected>>', 
+                                lambda e: self.change_font_size(self.findings_text, findings_size_var.get()))
+        
         self.findings_text = tk.Text(content_frame, height=6, font=("Segoe UI", 11), relief='solid', bd=1, wrap='word', 
                                    highlightbackground="#cbd5e1", highlightcolor="#3b82f6", bg='#ffffff')
         self.findings_text.pack(fill="both", expand=True, pady=(0, 12))
@@ -248,8 +290,31 @@ class RadiologistApp:
         findings_scrollbar.pack(side="right", fill="y")
         self.findings_text.configure(yscrollcommand=findings_scrollbar.set)
 
-        # Impression
+        # Impression with rich text editing
         ttk.Label(content_frame, text="Impression:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").pack(anchor='w', pady=(0, 5))
+        
+        # Impression formatting toolbar
+        impression_toolbar = ttk.Frame(content_frame)
+        impression_toolbar.pack(fill="x", pady=(0, 5))
+        
+        tk.Button(impression_toolbar, text="B", font=("Segoe UI", 10, "bold"), width=3, 
+                 command=lambda: self.toggle_bold(self.impression_text)).pack(side="left", padx=(0, 2))
+        tk.Button(impression_toolbar, text="I", font=("Segoe UI", 10, "italic"), width=3,
+                 command=lambda: self.toggle_italic(self.impression_text)).pack(side="left", padx=(0, 2))
+        tk.Button(impression_toolbar, text="•", font=("Segoe UI", 10), width=3,
+                 command=lambda: self.add_bullet(self.impression_text)).pack(side="left", padx=(0, 2))
+        tk.Button(impression_toolbar, text="📋", font=("Segoe UI", 10), width=3,
+                 command=lambda: self.paste_table(self.impression_text)).pack(side="left", padx=(0, 2))
+        
+        # Font size dropdown for impression
+        tk.Label(impression_toolbar, text="Size:", font=("Segoe UI", 9)).pack(side="left", padx=(10, 2))
+        impression_size_var = tk.StringVar(value="11")
+        impression_size_combo = ttk.Combobox(impression_toolbar, textvariable=impression_size_var, 
+                                            values=["10", "11", "12", "14", "16"], width=5, state="readonly")
+        impression_size_combo.pack(side="left", padx=(0, 10))
+        impression_size_combo.bind('<<ComboboxSelected>>', 
+                                  lambda e: self.change_font_size(self.impression_text, impression_size_var.get()))
+        
         self.impression_text = tk.Text(content_frame, height=3, font=("Segoe UI", 11), relief='solid', bd=1, wrap='word',
                                      highlightbackground="#cbd5e1", highlightcolor="#3b82f6", bg='#ffffff')
         self.impression_text.pack(fill="both", expand=True, pady=(0, 12))
@@ -257,14 +322,42 @@ class RadiologistApp:
         impression_scrollbar.pack(side="right", fill="y")
         self.impression_text.configure(yscrollcommand=impression_scrollbar.set)
 
-        # Recommendations
+        # Recommendations with rich text editing
         ttk.Label(content_frame, text="Recommendations:", font=("Segoe UI", 11, "bold"), foreground="#1e293b").pack(anchor='w', pady=(0, 5))
+        
+        # Recommendations formatting toolbar
+        recommendations_toolbar = ttk.Frame(content_frame)
+        recommendations_toolbar.pack(fill="x", pady=(0, 5))
+        
+        tk.Button(recommendations_toolbar, text="B", font=("Segoe UI", 10, "bold"), width=3, 
+                 command=lambda: self.toggle_bold(self.recommendations_text)).pack(side="left", padx=(0, 2))
+        tk.Button(recommendations_toolbar, text="I", font=("Segoe UI", 10, "italic"), width=3,
+                 command=lambda: self.toggle_italic(self.recommendations_text)).pack(side="left", padx=(0, 2))
+        tk.Button(recommendations_toolbar, text="•", font=("Segoe UI", 10), width=3,
+                 command=lambda: self.add_bullet(self.recommendations_text)).pack(side="left", padx=(0, 2))
+        tk.Button(recommendations_toolbar, text="📋", font=("Segoe UI", 10), width=3,
+                 command=lambda: self.paste_table(self.recommendations_text)).pack(side="left", padx=(0, 2))
+        
+        # Font size dropdown for recommendations
+        tk.Label(recommendations_toolbar, text="Size:", font=("Segoe UI", 9)).pack(side="left", padx=(10, 2))
+        recommendations_size_var = tk.StringVar(value="11")
+        recommendations_size_combo = ttk.Combobox(recommendations_toolbar, textvariable=recommendations_size_var, 
+                                                 values=["10", "11", "12", "14", "16"], width=5, state="readonly")
+        recommendations_size_combo.pack(side="left", padx=(0, 10))
+        recommendations_size_combo.bind('<<ComboboxSelected>>', 
+                                       lambda e: self.change_font_size(self.recommendations_text, recommendations_size_var.get()))
+        
         self.recommendations_text = tk.Text(content_frame, height=2, font=("Segoe UI", 11), relief='solid', bd=1, wrap='word',
                                           highlightbackground="#cbd5e1", highlightcolor="#3b82f6", bg='#ffffff')
         self.recommendations_text.pack(fill="both", expand=True, pady=(0, 10))
         recommendations_scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=self.recommendations_text.yview)
         recommendations_scrollbar.pack(side="right", fill="y")
         self.recommendations_text.configure(yscrollcommand=recommendations_scrollbar.set)
+        
+        # Add Clear All button for report content
+        clear_report_btn = ttk.Button(content_frame, text="🗑️ Clear Report Content", style='Danger.TButton', 
+                                     command=self.clear_report_content)
+        clear_report_btn.pack(pady=(10, 0))
 
     def create_preview_tab(self, parent):
         # Preview Section
@@ -642,8 +735,8 @@ class RadiologistApp:
             "Other": f"Specialized radiological examination of {body_part}"
         }
         
-        self.technique_entry.delete(0, tk.END)
-        self.technique_entry.insert(0, technique_templates.get(test_type, ""))
+        self.technique_text.delete(1.0, tk.END)
+        self.technique_text.insert(1.0, technique_templates.get(test_type, ""))
 
     def on_body_part_change(self, event=None):
         """Update technique when body part changes"""
@@ -667,8 +760,8 @@ class RadiologistApp:
             requirements = self.admin_data["requirements"][test_type]
             
             # Load admin-defined templates
-            self.technique_entry.delete(0, tk.END)
-            self.technique_entry.insert(0, requirements.get("technique", ""))
+            self.technique_text.delete(1.0, tk.END)
+            self.technique_text.insert(1.0, requirements.get("technique", ""))
             
             self.findings_text.delete("1.0", tk.END)
             self.findings_text.insert("1.0", requirements.get("findings", ""))
@@ -690,8 +783,8 @@ class RadiologistApp:
             }
             
             # Load generic template
-            self.technique_entry.delete(0, tk.END)
-            self.technique_entry.insert(0, template["technique"])
+            self.technique_text.delete(1.0, tk.END)
+            self.technique_text.insert(1.0, template["technique"])
             
             self.findings_text.delete("1.0", tk.END)
             self.findings_text.insert("1.0", template["findings"])
@@ -726,7 +819,7 @@ Body Part: {self.body_part_var.get()}
 
 TECHNIQUE
 {'-'*10}
-{self.technique_entry.get().strip()}
+{self.technique_text.get("1.0", tk.END).strip()}
 
 FINDINGS
 {'-'*9}
@@ -1177,7 +1270,7 @@ RECOMMENDATIONS
             technique_heading.style.font.bold = True
             technique_heading.style.font.color.rgb = RGBColor(0, 51, 102)
             
-            technique_para = doc.add_paragraph(self.technique_entry.get().strip())
+            technique_para = doc.add_paragraph(self.technique_text.get("1.0", tk.END).strip())
             technique_para.style.font.name = 'Arial'
             technique_para.style.font.size = Pt(11)
             technique_para.style.font.color.rgb = RGBColor(0, 0, 0)
@@ -1273,7 +1366,7 @@ RECOMMENDATIONS
         self.age_entry.delete(0, tk.END)
         self.test_type_combo.set("Select Test Type")
         self.body_part_combo.set("Select Body Part")
-        self.technique_entry.delete(0, tk.END)
+        self.technique_text.delete(1.0, tk.END)
         self.findings_text.delete("1.0", tk.END)
         self.impression_text.delete("1.0", tk.END)
         self.recommendations_text.delete("1.0", tk.END)
@@ -1359,12 +1452,39 @@ RECOMMENDATIONS
         self.test_type_combo_admin.pack(fill="x", pady=(0, 15))
         self.test_type_combo_admin.bind('<<ComboboxSelected>>', self.load_test_requirements)
         
-        # Requirements fields
+        # Requirements fields with rich text formatting
         ttk.Label(form_frame, text="Default Technique:", font=("Segoe UI", 11, "bold"), 
                  foreground="#1e293b").pack(anchor='w', pady=(0, 5))
-        self.default_technique_text = tk.Text(form_frame, height=3, font=("Segoe UI", 11), 
+        
+        # Technique field with formatting toolbar
+        technique_frame = ttk.Frame(form_frame)
+        technique_frame.pack(fill="x", pady=(0, 15))
+        
+        # Formatting toolbar for technique
+        technique_toolbar = ttk.Frame(technique_frame)
+        technique_toolbar.pack(fill="x", pady=(0, 5))
+        
+        tk.Button(technique_toolbar, text="B", font=("Segoe UI", 10, "bold"), 
+                 command=lambda: self.toggle_bold(self.default_technique_text)).pack(side="left", padx=(0, 2))
+        tk.Button(technique_toolbar, text="I", font=("Segoe UI", 10, "italic"), 
+                 command=lambda: self.toggle_italic(self.default_technique_text)).pack(side="left", padx=(0, 2))
+        tk.Button(technique_toolbar, text="•", font=("Segoe UI", 10), 
+                 command=lambda: self.add_bullet(self.default_technique_text)).pack(side="left", padx=(0, 2))
+        tk.Button(technique_toolbar, text="📋", font=("Segoe UI", 10), 
+                 command=lambda: self.paste_table(self.default_technique_text)).pack(side="left", padx=(0, 2))
+        
+        # Font size dropdown
+        font_size_var = tk.StringVar(value="11")
+        font_size_combo = ttk.Combobox(technique_toolbar, textvariable=font_size_var, 
+                                      values=["8", "9", "10", "11", "12", "14", "16", "18"], 
+                                      width=5, state="readonly")
+        font_size_combo.pack(side="left", padx=(10, 0))
+        font_size_combo.bind('<<ComboboxSelected>>', 
+                           lambda e: self.change_font_size(self.default_technique_text, font_size_var.get()))
+        
+        self.default_technique_text = tk.Text(technique_frame, height=3, font=("Segoe UI", 11), 
                                             relief='solid', bd=1, wrap='word')
-        self.default_technique_text.pack(fill="x", pady=(0, 15))
+        self.default_technique_text.pack(fill="x")
         
         # Pack canvas and scrollbar
         canvas.pack(side="left", fill="both", expand=True)
@@ -1372,21 +1492,102 @@ RECOMMENDATIONS
         
         ttk.Label(form_frame, text="Default Findings Template:", font=("Segoe UI", 11, "bold"), 
                  foreground="#1e293b").pack(anchor='w', pady=(0, 5))
-        self.default_findings_text = tk.Text(form_frame, height=6, font=("Segoe UI", 11), 
+        
+        # Findings field with formatting toolbar
+        findings_frame = ttk.Frame(form_frame)
+        findings_frame.pack(fill="both", expand=True, pady=(0, 15))
+        
+        # Formatting toolbar for findings
+        findings_toolbar = ttk.Frame(findings_frame)
+        findings_toolbar.pack(fill="x", pady=(0, 5))
+        
+        tk.Button(findings_toolbar, text="B", font=("Segoe UI", 10, "bold"), 
+                 command=lambda: self.toggle_bold(self.default_findings_text)).pack(side="left", padx=(0, 2))
+        tk.Button(findings_toolbar, text="I", font=("Segoe UI", 10, "italic"), 
+                 command=lambda: self.toggle_italic(self.default_findings_text)).pack(side="left", padx=(0, 2))
+        tk.Button(findings_toolbar, text="•", font=("Segoe UI", 10), 
+                 command=lambda: self.add_bullet(self.default_findings_text)).pack(side="left", padx=(0, 2))
+        tk.Button(findings_toolbar, text="📋", font=("Segoe UI", 10), 
+                 command=lambda: self.paste_table(self.default_findings_text)).pack(side="left", padx=(0, 2))
+        
+        # Font size dropdown for findings
+        findings_font_size_var = tk.StringVar(value="11")
+        findings_font_size_combo = ttk.Combobox(findings_toolbar, textvariable=findings_font_size_var, 
+                                               values=["8", "9", "10", "11", "12", "14", "16", "18"], 
+                                               width=5, state="readonly")
+        findings_font_size_combo.pack(side="left", padx=(10, 0))
+        findings_font_size_combo.bind('<<ComboboxSelected>>', 
+                                    lambda e: self.change_font_size(self.default_findings_text, findings_font_size_var.get()))
+        
+        self.default_findings_text = tk.Text(findings_frame, height=6, font=("Segoe UI", 11), 
                                            relief='solid', bd=1, wrap='word')
-        self.default_findings_text.pack(fill="both", expand=True, pady=(0, 15))
+        self.default_findings_text.pack(fill="both", expand=True)
         
         ttk.Label(form_frame, text="Default Impression Template:", font=("Segoe UI", 11, "bold"), 
                  foreground="#1e293b").pack(anchor='w', pady=(0, 5))
-        self.default_impression_text = tk.Text(form_frame, height=4, font=("Segoe UI", 11), 
+        
+        # Impression field with formatting toolbar
+        impression_frame = ttk.Frame(form_frame)
+        impression_frame.pack(fill="both", expand=True, pady=(0, 15))
+        
+        # Formatting toolbar for impression
+        impression_toolbar = ttk.Frame(impression_frame)
+        impression_toolbar.pack(fill="x", pady=(0, 5))
+        
+        tk.Button(impression_toolbar, text="B", font=("Segoe UI", 10, "bold"), 
+                 command=lambda: self.toggle_bold(self.default_impression_text)).pack(side="left", padx=(0, 2))
+        tk.Button(impression_toolbar, text="I", font=("Segoe UI", 10, "italic"), 
+                 command=lambda: self.toggle_italic(self.default_impression_text)).pack(side="left", padx=(0, 2))
+        tk.Button(impression_toolbar, text="•", font=("Segoe UI", 10), 
+                 command=lambda: self.add_bullet(self.default_impression_text)).pack(side="left", padx=(0, 2))
+        tk.Button(impression_toolbar, text="📋", font=("Segoe UI", 10), 
+                 command=lambda: self.paste_table(self.default_impression_text)).pack(side="left", padx=(0, 2))
+        
+        # Font size dropdown for impression
+        impression_font_size_var = tk.StringVar(value="11")
+        impression_font_size_combo = ttk.Combobox(impression_toolbar, textvariable=impression_font_size_var, 
+                                                 values=["8", "9", "10", "11", "12", "14", "16", "18"], 
+                                                 width=5, state="readonly")
+        impression_font_size_combo.pack(side="left", padx=(10, 0))
+        impression_font_size_combo.bind('<<ComboboxSelected>>', 
+                                      lambda e: self.change_font_size(self.default_impression_text, impression_font_size_var.get()))
+        
+        self.default_impression_text = tk.Text(impression_frame, height=4, font=("Segoe UI", 11), 
                                              relief='solid', bd=1, wrap='word')
-        self.default_impression_text.pack(fill="both", expand=True, pady=(0, 15))
+        self.default_impression_text.pack(fill="both", expand=True)
         
         ttk.Label(form_frame, text="Default Recommendations Template:", font=("Segoe UI", 11, "bold"), 
                  foreground="#1e293b").pack(anchor='w', pady=(0, 5))
-        self.default_recommendations_text = tk.Text(form_frame, height=3, font=("Segoe UI", 11), 
+        
+        # Recommendations field with formatting toolbar
+        recommendations_frame = ttk.Frame(form_frame)
+        recommendations_frame.pack(fill="both", expand=True, pady=(0, 15))
+        
+        # Formatting toolbar for recommendations
+        recommendations_toolbar = ttk.Frame(recommendations_frame)
+        recommendations_toolbar.pack(fill="x", pady=(0, 5))
+        
+        tk.Button(recommendations_toolbar, text="B", font=("Segoe UI", 10, "bold"), 
+                  command=lambda: self.toggle_bold(self.default_recommendations_text)).pack(side="left", padx=(0, 2))
+        tk.Button(recommendations_toolbar, text="I", font=("Segoe UI", 10, "italic"), 
+                  command=lambda: self.toggle_italic(self.default_recommendations_text)).pack(side="left", padx=(0, 2))
+        tk.Button(recommendations_toolbar, text="•", font=("Segoe UI", 10), 
+                  command=lambda: self.add_bullet(self.default_recommendations_text)).pack(side="left", padx=(0, 2))
+        tk.Button(recommendations_toolbar, text="📋", font=("Segoe UI", 10), 
+                  command=lambda: self.paste_table(self.default_recommendations_text)).pack(side="left", padx=(0, 2))
+        
+        # Font size dropdown for recommendations
+        recommendations_font_size_var = tk.StringVar(value="11")
+        recommendations_font_size_combo = ttk.Combobox(recommendations_toolbar, textvariable=recommendations_font_size_var, 
+                                                      values=["8", "9", "10", "11", "12", "14", "16", "18"], 
+                                                      width=5, state="readonly")
+        recommendations_font_size_combo.pack(side="left", padx=(10, 0))
+        recommendations_font_size_combo.bind('<<ComboboxSelected>>', 
+                                           lambda e: self.change_font_size(self.default_recommendations_text, recommendations_font_size_var.get()))
+        
+        self.default_recommendations_text = tk.Text(recommendations_frame, height=3, font=("Segoe UI", 11), 
                                                   relief='solid', bd=1, wrap='word')
-        self.default_recommendations_text.pack(fill="both", expand=True, pady=(0, 15))
+        self.default_recommendations_text.pack(fill="both", expand=True)
         
         # Save requirements button
         save_req_btn = ttk.Button(form_frame, text="💾 Save Requirements", style='Success.TButton', 
@@ -1596,6 +1797,102 @@ RECOMMENDATIONS
         self.admin_data["requirements"][test_type] = requirements
         self.save_admin_data()
         messagebox.showinfo("Success", f"Requirements for '{test_type}' saved successfully.")
+
+    # Rich Text Formatting Functions
+    def toggle_bold(self, text_widget):
+        """Toggle bold formatting for selected text"""
+        try:
+            # Get current selection
+            sel_start = text_widget.index("sel.first")
+            sel_end = text_widget.index("sel.last")
+            
+            # Get current text
+            selected_text = text_widget.get(sel_start, sel_end)
+            
+            # Toggle bold (add/remove ** markers)
+            if selected_text.startswith("**") and selected_text.endswith("**"):
+                # Remove bold
+                new_text = selected_text[2:-2]
+            else:
+                # Add bold
+                new_text = f"**{selected_text}**"
+            
+            # Replace the text
+            text_widget.delete(sel_start, sel_end)
+            text_widget.insert(sel_start, new_text)
+            
+        except tk.TclError:
+            # No selection, insert bold markers at cursor
+            text_widget.insert("insert", "**")
+
+    def toggle_italic(self, text_widget):
+        """Toggle italic formatting for selected text"""
+        try:
+            # Get current selection
+            sel_start = text_widget.index("sel.first")
+            sel_end = text_widget.index("sel.last")
+            
+            # Get current text
+            selected_text = text_widget.get(sel_start, sel_end)
+            
+            # Toggle italic (add/remove * markers)
+            if selected_text.startswith("*") and selected_text.endswith("*") and not selected_text.startswith("**"):
+                # Remove italic
+                new_text = selected_text[1:-1]
+            else:
+                # Add italic
+                new_text = f"*{selected_text}*"
+            
+            # Replace the text
+            text_widget.delete(sel_start, sel_end)
+            text_widget.insert(sel_start, new_text)
+            
+        except tk.TclError:
+            # No selection, insert italic markers at cursor
+            text_widget.insert("insert", "*")
+
+    def add_bullet(self, text_widget):
+        """Add bullet point at cursor position"""
+        current_line = text_widget.index("insert linestart")
+        text_widget.insert(current_line, "• ")
+
+    def paste_table(self, text_widget):
+        """Insert a table template"""
+        table_template = """
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Data 1   | Data 2   | Data 3   |
+| Data 4   | Data 5   | Data 6   |
+"""
+        text_widget.insert("insert", table_template)
+
+    def change_font_size(self, text_widget, size):
+        """Change font size for the text widget"""
+        try:
+            size = int(size)
+            text_widget.configure(font=("Segoe UI", size))
+        except ValueError:
+            pass
+
+    def clear_report_content(self):
+        self.technique_text.delete(1.0, tk.END)
+        self.findings_text.delete("1.0", tk.END)
+        self.impression_text.delete("1.0", tk.END)
+        self.recommendations_text.delete("1.0", tk.END)
+        self.preview_text.config(state='normal')
+        self.preview_text.delete("1.0", tk.END)
+        self.preview_text.config(state='disabled')
+        self.status_label.config(text="Ready to create reports")
+
+    def clear_patient_info(self):
+        """Clear patient information fields"""
+        self.patient_name_entry.delete(0, tk.END)
+        self.age_entry.delete(0, tk.END)
+        self.test_type_combo.set("Select Test Type")
+        self.body_part_combo.set("Select Body Part")
+        self.generate_new_patient_id()  # Generate new patient ID
+        self.status_label.config(text="Patient information cleared", foreground="#10b981")
+
 
 def main():
     root = tk.Tk()

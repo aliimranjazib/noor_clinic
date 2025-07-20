@@ -1333,9 +1333,22 @@ RECOMMENDATIONS
         requirements_frame = ttk.Labelframe(content_frame, text="Test Requirements", style='Section.TLabelframe', padding=(15, 10))
         requirements_frame.pack(side="right", fill="both", expand=True, padx=(10, 0))
         
+        # Create scrollable frame for requirements
+        canvas = tk.Canvas(requirements_frame, bg='#f8fafc')
+        scrollbar = ttk.Scrollbar(requirements_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
         # Requirements form
-        form_frame = ttk.Frame(requirements_frame)
-        form_frame.pack(fill="both", expand=True)
+        form_frame = ttk.Frame(scrollable_frame)
+        form_frame.pack(fill="both", expand=True, padx=10, pady=10)
         
         # Test type selection
         ttk.Label(form_frame, text="Selected Test Type:", font=("Segoe UI", 11, "bold"), 
@@ -1352,6 +1365,10 @@ RECOMMENDATIONS
         self.default_technique_text = tk.Text(form_frame, height=3, font=("Segoe UI", 11), 
                                             relief='solid', bd=1, wrap='word')
         self.default_technique_text.pack(fill="x", pady=(0, 15))
+        
+        # Pack canvas and scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
         
         ttk.Label(form_frame, text="Default Findings Template:", font=("Segoe UI", 11, "bold"), 
                  foreground="#1e293b").pack(anchor='w', pady=(0, 5))
